@@ -16,6 +16,7 @@ FULL_EXTS = "bigdecimal,cgi/escape,continuation,coverage,date,dbm,digest/bubbleb
 
 BUILD_PROFILES = {
   "minimal"          => { debug: false, default_exts: "", user_exts: [] },
+  "minimal-c@e"      => { debug: false, default_exts: "", user_exts: ["compute_runtime"] },
   "minimal-debug"    => { debug: true,  default_exts: "", user_exts: [] },
   "minimal-js"       => { debug: false, default_exts: "", user_exts: ["js", "witapi"] },
   "minimal-js-debug" => { debug: true,  default_exts: "", user_exts: ["js", "witapi"] },
@@ -27,6 +28,7 @@ BUILD_PROFILES = {
 
 BUILDS = [
   { src: "head", target: "wasm32-unknown-wasi", profile: "minimal" },
+  { src: "head", target: "wasm32-unknown-wasi", profile: "minimal-c@e" },
   { src: "head", target: "wasm32-unknown-wasi", profile: "minimal-debug" },
   { src: "head", target: "wasm32-unknown-wasi", profile: "minimal-js" },
   { src: "head", target: "wasm32-unknown-wasi", profile: "minimal-js-debug" },
