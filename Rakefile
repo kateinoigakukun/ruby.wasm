@@ -16,7 +16,7 @@ FULL_EXTS = "bigdecimal,cgi/escape,continuation,coverage,date,dbm,digest/bubbleb
 
 BUILD_PROFILES = {
   "minimal"          => { debug: false, default_exts: "", user_exts: [] },
-  "minimal-c@e"      => { debug: false, default_exts: "", user_exts: ["compute_runtime"] },
+  "minimal-c@e"      => { debug: true,  default_exts: "", user_exts: ["compute_runtime"] },
   "minimal-debug"    => { debug: true,  default_exts: "", user_exts: [] },
   "minimal-js"       => { debug: false, default_exts: "", user_exts: ["js", "witapi"] },
   "minimal-js-debug" => { debug: true,  default_exts: "", user_exts: ["js", "witapi"] },
@@ -182,8 +182,12 @@ class BuildPlan
     end
     xldflags << extinit_obj
 
+    cppflags = []
+    cppflags << %Q(-DOPT_THREADED_CODE=2)
+
     args << %Q(LDFLAGS="#{ldflags.join(" ")}")
     args << %Q(XLDFLAGS="#{xldflags.join(" ")}")
+    args << %Q(cppflags="#{cppflags.join(" ")}")
     if profile[:debug]
       args << %Q(debugflags="-g")
       args << %Q(wasmoptflags="-O3 -g")
