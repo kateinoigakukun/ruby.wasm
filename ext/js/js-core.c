@@ -182,7 +182,7 @@ static VALUE _rb_js_obj_aref(VALUE obj, VALUE key) {
  */
 static VALUE _rb_js_obj_aset(VALUE obj, VALUE key, VALUE val) {
   struct jsvalue *p = check_jsvalue(obj);
-  struct jsvalue *v = check_jsvalue(val);
+  struct jsvalue *v = check_jsvalue(_rb_js_try_convert(rb_mJS, val));
   rb_js_abi_host_string_t key_abi_str;
   key = rb_obj_as_string(key);
   rstring_to_abi_string(key, &key_abi_str);
@@ -411,6 +411,7 @@ void Init_js() {
   rb_define_method(rb_cJS_Object, "__export_to_js", _rb_js_export_to_js, 0);
   rb_define_singleton_method(rb_cJS_Object, "__import_from_js", _rb_js_import_from_js, 0);
   rb_define_method(rb_cJS_Object, "inspect", _rb_js_obj_inspect, 0);
+  rb_define_method(rb_cJS_Object, "to_s", _rb_js_obj_inspect, 0);
   rb_define_singleton_method(rb_cJS_Object, "wrap", _rb_js_obj_wrap, 1);
 
   rb_define_method(rb_cInteger, "to_js", _rb_js_integer_to_js, 0);

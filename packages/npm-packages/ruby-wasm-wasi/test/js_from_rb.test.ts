@@ -65,6 +65,49 @@ describe("Manipulation of JS from Ruby", () => {
   });
 
   test.each([
+    `24`, `"hello"`, `null`, `undefined`,
+  ])("JS::Object#to_s (%s)", async (value) => {
+    const vm = await initRubyVM();
+    const to_s_result = `require "js"; JS.eval('return ${value}').to_s`;
+    const inspect_result = `require "js"; JS.eval('return ${value}').inspect`;
+    expect(vm.eval(to_s_result).toString()).toBe(String(eval(value)));
+    expect(vm.eval(inspect_result).toString()).toBe(String(eval(value)));
+  });
+
+  test.each([
+    { self: `24`, calee: "toString", args: [], result: "24" },
+    { self: `"hello"`, calee: "charAt", args: [4], result: "o" },
+  ])("JS::Object#method_missing (%s)", async (props) => {
+    const vm = await initRubyVM();
+    const result = `
+    require "js"
+    obj = JS.eval('return ${props.self}')
+    obj.${props.calee}(${props.args.join(", ")})
+    `;
+    expect(vm.eval(result).toString()).toBe(props.result);
+  });
+
+  test("JS::Object#method_missing with block", async () => {
+    const vm = await initRubyVM();
+    const proc = vm.eval(`
+    require "js"
+    proc do |obj|
+      obj.take_block "x" do |y|
+        $y = y
+      end
+    end
+    `);
+    proc.call("call", vm.wrap({
+      take_block: (arg1: string, block: (_: any) => void) => {
+        expect(arg1).toBe("x");
+        block("y");
+      }
+    }))
+    const y = vm.eval(`$y`);
+    expect(y.toString()).toBe("y");
+  });
+
+  test.each([
     { expr: "JS.global[:Object]", result: Object },
     { expr: "JS.global[:Object][:keys]", result: Object.keys },
     { expr: "JS.global[:Object][:unknown_key]", result: undefined },
@@ -82,6 +125,8 @@ describe("Manipulation of JS from Ruby", () => {
   test.each([
     { key: "foo", rvalue: `JS.eval("return 1")`, rvalue_js: 1 },
     { key: "bar", rvalue: `JS.eval("return {}")`, rvalue_js: {} },
+    { key: "bar", rvalue: `42`, rvalue_js: 42 },
+    { key: "bar", rvalue: `"str"`, rvalue_js: "str" },
   ])(`JS::Object#[]= (%s)`, async (props) => {
     const vm = await initRubyVM();
     const result = vm.eval(`
